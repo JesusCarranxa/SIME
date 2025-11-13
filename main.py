@@ -2,6 +2,7 @@ print("Inicialitzant sistema META-F⁴ / D₄...")
 
 import pandas as pd
 import yfinance as yf
+from d4_core.core_d4 import D4Core
 
 tickers = ["AENA.MC", "BTC-USD"]
 data = {t: yf.download(t, period="1mo")["Close"] for t in tickers}
@@ -10,7 +11,6 @@ df = pd.DataFrame(data)
 corr = df.corr().iloc[0, 1]
 
 print(f"Correlació AENA vs BTC: {corr:.4f}")
-print("Sistema D₄ operatiu dins from d4_core.core_d4 import D4Core
 
 # Inicialitza el nucli D₄
 d4 = D4Core()
