@@ -10,4 +10,4 @@ df = pd.DataFrame(data)
 corr = df.corr().iloc[0, 1]
 
 print(f"Correlació AENA vs BTC: {corr:.4f}")
-print("Sistema D₄ operatiu dins 
+print("Sistema D₄ operatiu dins Docker.")
