@@ -22,4 +22,5 @@ SIME (Sistema d'Interpretació Matemàtica Emocional) is a formal symbolic frame
 
 ## 📎 About this repository
 
-This repository serves as a **symbolic showcase** of the SIME system. It demonstrates the concept and emotional potential of symbolic interpretation, without disclosing the protected core logic.
+This repository serves as a **symbolic showcase** of the SIME system.  
+It demonstrates the concept and emotional potential of symbolic interpretation, without disclosing the protected core logic.
