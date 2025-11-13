@@ -1,15 +1,20 @@
 {
   "name": "META-F4_D4",
   "image": "mcr.microsoft.com/devcontainers/python:3.11",
-  "postCreateCommand": "pip install --no-cache-dir -r requirements.txt && python main.py",
+  "workspaceFolder": "/workspace/SIME",
+  "postCreateCommand": "pip install --no-cache-dir -r requirements.txt && export PYTHONPATH=$PYTHONPATH:/workspace/SIME/d4_core && python main.py",
   "customizations": {
     "vscode": {
       "extensions": [
         "ms-python.python",
         "github.copilot",
-        "ms-azuretools.vscode-docker"
+        "ms-azuretools.vscode-docker",
+        "ms-toolsai.jupyter"
       ]
     }
   },
+  "mounts": [
+    "source=${localWorkspaceFolder}/d4_core,target=/workspace/SIME/d4_core,type=bind"
+  ],
   "remoteUser": "vscode"
 }
