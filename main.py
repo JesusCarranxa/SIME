@@ -1,0 +1,1 @@
+print("Inicialitzant sistema META-F⁴ / D₄...")
