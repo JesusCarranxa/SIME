@@ -3,6 +3,7 @@
   "image": "mcr.microsoft.com/devcontainers/python:3.11",
   "workspaceFolder": "/workspaces/SIME",
   "postCreateCommand": "bash run.sh",
+  "postStartCommand": "bash run.sh",
   "customizations": {
     "vscode": {
       "extensions": [
