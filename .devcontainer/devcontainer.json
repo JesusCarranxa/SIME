@@ -1,8 +1,8 @@
 {
   "name": "META-F4_D4",
   "image": "mcr.microsoft.com/devcontainers/python:3.11",
-  "workspaceFolder": "/workspace/SIME",
-  "postCreateCommand": "pip install --no-cache-dir -r requirements.txt && export PYTHONPATH=$PYTHONPATH:/workspace/SIME/d4_core && python main.py",
+  "workspaceFolder": "/workspaces/SIME",
+  "postCreateCommand": "pip install --no-cache-dir -r requirements.txt",
   "customizations": {
     "vscode": {
       "extensions": [
@@ -14,7 +14,7 @@
     }
   },
   "mounts": [
-    "source=${localWorkspaceFolder}/d4_core,target=/workspace/SIME/d4_core,type=bind"
+    "source=${localWorkspaceFolder},target=/workspaces/SIME,type=bind,consistency=cached"
   ],
   "remoteUser": "vscode"
 }
