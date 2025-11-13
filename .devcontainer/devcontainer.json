@@ -18,3 +18,4 @@
   ],
   "remoteUser": "vscode"
 }
+"postCreateCommand": "bash run.sh",
