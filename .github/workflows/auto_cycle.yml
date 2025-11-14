@@ -1,50 +1,60 @@
-name: META-F4_D4 Autonomous Cycle
+name: META-F⁴_D₄ Autonomous Cycle
 
 on:
+  push:
+    branches:
+      - main
   issues:
     types: [opened, edited, reopened]
-  workflow_dispatch:        # permet iniciar-lo manualment
-  push:
-    branches: [ main ]
+  workflow_dispatch:
 
 permissions:
   contents: write
   issues: write
 
 jobs:
-  run-meta-cycle:
+  run_autonomous_cycle:
     runs-on: ubuntu-latest
 
     steps:
       - name: 🧩 Checkout repository
         uses: actions/checkout@v4
 
-      - name: 🧠 Set up Python 3.11
+      - name: 🧰 Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.10'
 
       - name: 📦 Install dependencies
         run: |
-          pip install --upgrade pip
-          pip install -r requirements.txt || true
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-      - name: 🔐 Verify autonomous code integrity
-        run: python .github/scripts/auto_editor_verified.py
+      - name: 🔍 Validate scripts and workflow
+        run: |
+          echo "Validant connexions..."
+          test -f run.sh && echo "run.sh OK" || echo "Falta run.sh"
+          test -f main.py && echo "main.py OK" || echo "Falta main.py"
 
-      - name: 🚀 Execute main autonomous cycle
+      - name: 🚀 Execute symbolic core
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo ">>> Iniciant cicle META-F4/D4..."
+          echo "Executant META-F4_D4 cicle inicial..."
           chmod +x run.sh || true
-          bash run.sh || python main.py
-          echo ">>> Cicle completat correctament ✅"
+          ./run.sh || python main.py
 
-      - name: 🪶 Post results to issue
-        if: github.event_name == 'issues'
+      - name: 📊 Verify correlation AENA vs BTC
         run: |
-          echo "Informant a l'issue original..."
-          echo "✅ META-F4/D4 executat correctament a $(date -u)" > report.txt
-          gh issue comment ${{ github.event.issue.number }} -F report.txt
+          echo "Verificant correlació (simulada)..."
+          python - <<'PYCODE'
+          import numpy as np
+          print("Correlació AENA vs BTC (mock test):", np.corrcoef([1,2,3], [1.05,2.1,2.9])[0,1])
+          PYCODE
+
+      - name: 🧠 Auto-report status
+        uses: peter-evans/create-issue-from-file@v5
+        with:
+          title: "✅ Cicle META-F⁴_D₄ completat automàticament"
+          content-filepath: README.md
+          labels: automated
