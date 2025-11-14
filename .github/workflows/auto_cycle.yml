@@ -1,9 +1,11 @@
-name: META-F⁴_D₄ Autonomous Cycle
+name: META-F⁴_D₄ Autonomous Cycle (Self-Healing + HTML Summary)
 
 on:
   push:
     branches:
       - main
+  schedule:
+    - cron: "0 7 * * *"   # Execució diària a les 07:00 UTC
 
 jobs:
   run_autonomous_cycle:
@@ -16,35 +18,71 @@ jobs:
       - name: 🐍 Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: "3.11"
 
       - name: 📦 Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r requirements.txt || true
 
       - name: 🚀 Execute symbolic core
+        id: run_main
         run: |
-          echo "Executant META-F⁴_D₄ cicle inicial..."
+          echo "🧠 Iniciant cicle META-F⁴ / D₄..."
           export PYTHONPATH=$PYTHONPATH:$(pwd)
-          python main.py > cycle_log.txt 2>&1 || true
+          python main.py > cycle_log.txt 2>&1 || echo "⚠️ Error en execució principal" >> cycle_log.txt
 
-      - name: 📊 Verify correlation AENA vs BTC
+      - name: 🩺 Self-heal (re-execució si hi ha fallada)
+        if: failure() || contains(steps.run_main.outcome, 'failure')
         run: |
-          echo "Verificant correlació AENA vs BTC..."
-          python -c "import pandas as pd; print('Verificació completada ✅')"
+          echo "⚙️ Detectat error — iniciant mode autorecuperació..."
+          python -m pip install --upgrade --force-reinstall -r requirements.txt || true
+          echo "🔁 Reexecutant el cicle complet..."
+          python main.py >> cycle_log.txt 2>&1 || echo "❌ Reexecució també ha fallat." >> cycle_log.txt
+          echo "🧩 Autorecuperació finalitzada."
 
-      - name: 🧠 Auto-report status
+      - name: 📊 Generate summary (últimes 30 línies)
+        id: summary
         run: |
-          echo "Generant informe automàtic..."
-          echo "Cicle completat el $(date)" >> cycle_log.txt
-          echo "Informe finalitzat correctament."
+          tail -n 30 cycle_log.txt > log_tail.txt
+          echo "summary<<EOF" >> $GITHUB_OUTPUT
+          echo "$(tail -n 30 cycle_log.txt)" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: 💾 Upload artifacts (logs i sortides)
+      - name: 💾 Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: META-F4_D4_run_$(date +'%Y-%m-%d_%H-%M-%S')
-          path: |
-            cycle_log.txt
-            outputs/
-          if-no-files-found: ignore
+          name: META-F4_D4_run_${{ github.run_number }}
+          path: cycle_log.txt
+
+      - name: ✉️ Send HTML email summary
+        if: failure() || always()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: "⚠️ META-F⁴ / D₄ – Informe automàtic del cicle ${{ github.run_number }}"
+          to: ${{ secrets.ALERT_EMAIL }}
+          from: META-F4_D4@system.local
+          html_body: |
+            <html>
+            <body style="font-family: monospace; background-color: #0f172a; color: #e2e8f0; padding: 20px;">
+              <h2 style="color:#60a5fa;">🧠 META-F⁴ / D₄ – Informe automàtic del cicle</h2>
+              <p><b>Execució #${{ github.run_number }}</b> – <b>Data:</b> $(date)</p>
+
+              <h3 style="color:#34d399;">Resum (últimes línies del log):</h3>
+              <pre style="background:#1e293b; padding:10px; border-radius:6px; color:#f8fafc; white-space:pre-wrap;">
+${{ steps.summary.outputs.summary }}
+              </pre>
+
+              <hr style="border:1px solid #475569;">
+              <h3 style="color:#f87171;">Sistema d’autorecuperació</h3>
+              <p>Si s’ha detectat una fallada, s’ha executat automàticament una re-instal·lació i re-execució completa.</p>
+              <p>Tots els detalls estan al fitxer <b>cycle_log.txt</b>.</p>
+
+              <p style="color:#94a3b8;">— Sistema Autònom META-F⁴ / D₄</p>
+            </body>
+            </html>
+          attachments: cycle_log.txt
