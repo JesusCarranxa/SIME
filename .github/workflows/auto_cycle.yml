@@ -29,8 +29,12 @@ jobs:
         id: run_main
         run: |
           echo "🧠 Iniciant cicle META-F⁴ / D₄..."
+          chmod +x run.sh || true
           export PYTHONPATH=$PYTHONPATH:$(pwd)
-          python main.py > cycle_log.txt 2>&1 || echo "⚠️ Error en execució principal" >> cycle_log.txt
+          bash -e run.sh > cycle_log.txt 2>&1 || {
+            echo "⚠️ Error en execució principal" >> cycle_log.txt
+            exit 1
+          }
 
       - name: 🩺 Self-heal (re-execució si hi ha fallada)
         if: failure() || contains(steps.run_main.outcome, 'failure')
@@ -38,7 +42,7 @@ jobs:
           echo "⚙️ Detectat error — iniciant mode autorecuperació..."
           python -m pip install --upgrade --force-reinstall -r requirements.txt || true
           echo "🔁 Reexecutant el cicle complet..."
-          python main.py >> cycle_log.txt 2>&1 || echo "❌ Reexecució també ha fallat." >> cycle_log.txt
+          bash -e run.sh >> cycle_log.txt 2>&1 || echo "❌ Reexecució també ha fallat." >> cycle_log.txt
           echo "🧩 Autorecuperació finalitzada."
 
       - name: 📊 Generate summary (últimes 30 línies)
@@ -46,7 +50,7 @@ jobs:
         run: |
           tail -n 30 cycle_log.txt > log_tail.txt
           echo "summary<<EOF" >> $GITHUB_OUTPUT
-          echo "$(tail -n 30 cycle_log.txt)" >> $GITHUB_OUTPUT
+          tail -n 30 cycle_log.txt >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: 💾 Upload artifacts
@@ -56,7 +60,7 @@ jobs:
           path: cycle_log.txt
 
       - name: ✉️ Send HTML email summary
-        if: failure() || always()
+        if: always()
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
@@ -68,21 +72,20 @@ jobs:
           from: META-F4_D4@system.local
           html_body: |
             <html>
-            <body style="font-family: monospace; background-color: #0f172a; color: #e2e8f0; padding: 20px;">
-              <h2 style="color:#60a5fa;">🧠 META-F⁴ / D₄ – Informe automàtic del cicle</h2>
-              <p><b>Execució #${{ github.run_number }}</b> – <b>Data:</b> $(date)</p>
+              <body style="font-family: monospace; background-color:#0d1117; color:white; padding:20px;">
+                <h2 style="color:#60a5fa;">🧠 META-F⁴ / D₄ – Informe automàtic</h2>
+                <p><b>Execució #${{ github.run_number }}</b> — <b>Data:</b> $(date)</p>
 
-              <h3 style="color:#34d399;">Resum (últimes línies del log):</h3>
-              <pre style="background:#1e293b; padding:10px; border-radius:6px; color:#f8fafc; white-space:pre-wrap;">
+                <h3 style="color:#34d399;">Resum (últimes línies del log):</h3>
+                <pre style="background:#1e293b; padding:10px; border-radius:6px; white-space:pre-wrap;">
 ${{ steps.summary.outputs.summary }}
-              </pre>
+                </pre>
 
-              <hr style="border:1px solid #475569;">
-              <h3 style="color:#f87171;">Sistema d’autorecuperació</h3>
-              <p>Si s’ha detectat una fallada, s’ha executat automàticament una re-instal·lació i re-execució completa.</p>
-              <p>Tots els detalls estan al fitxer <b>cycle_log.txt</b>.</p>
+                <hr style="border:1px solid #475569;">
+                <p>Si hi ha hagut una fallada, el sistema ha activat el mode d’autorecuperació.</p>
+                <p>Tots els detalls estan al fitxer adjunt <b>cycle_log.txt</b>.</p>
 
-              <p style="color:#94a3b8;">— Sistema Autònom META-F⁴ / D₄</p>
-            </body>
+                <p style="color:#94a3b8;">— Sistema Autònom META-F⁴ / D₄</p>
+              </body>
             </html>
           attachments: cycle_log.txt
