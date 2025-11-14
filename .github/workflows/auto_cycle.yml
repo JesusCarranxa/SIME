@@ -1,4 +1,4 @@
-name: META-F⁴_D₄ Autonomous Cycle (Self-Healing + HTML Summary)
+name: META-F4_D4 Autonomous Cycle (Self-Healing + HTML Summary)
 
 on:
   push:
@@ -12,40 +12,39 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 🧩 Checkout repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: 🐍 Set up Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: 📦 Install dependencies
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt || true
 
-      - name: 🚀 Execute symbolic core
+      - name: Execute symbolic core
         id: run_main
         run: |
-          echo "🧠 Iniciant cicle META-F⁴ / D₄..."
+          echo "Iniciant cicle META-F4 / D4..."
           chmod +x run.sh || true
           export PYTHONPATH=$PYTHONPATH:$(pwd)
           bash -e run.sh > cycle_log.txt 2>&1 || {
-            echo "⚠️ Error en execució principal" >> cycle_log.txt
+            echo "Error en execució principal" >> cycle_log.txt
             exit 1
           }
 
-      - name: 🩺 Self-heal (re-execució si hi ha fallada)
-        if: failure() || contains(steps.run_main.outcome, 'failure')
+      - name: Self-heal (retry on failure)
+        if: failure()
         run: |
-          echo "⚙️ Detectat error — iniciant mode autorecuperació..."
+          echo "Autorecuperació..."
           python -m pip install --upgrade --force-reinstall -r requirements.txt || true
-          echo "🔁 Reexecutant el cicle complet..."
-          bash -e run.sh >> cycle_log.txt 2>&1 || echo "❌ Reexecució també ha fallat." >> cycle_log.txt
-          echo "🧩 Autorecuperació finalitzada."
+          echo "Reexecutant..."
+          bash -e run.sh >> cycle_log.txt 2>&1 || echo "Reexecució fallida." >> cycle_log.txt
 
-      - name: 📊 Generate summary (últimes 30 línies)
+      - name: Generate summary
         id: summary
         run: |
           tail -n 30 cycle_log.txt > log_tail.txt
@@ -53,13 +52,13 @@ jobs:
           tail -n 30 cycle_log.txt >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: 💾 Upload artifacts
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: META-F4_D4_run_${{ github.run_number }}
           path: cycle_log.txt
 
-      - name: ✉️ Send HTML email summary
+      - name: Send HTML email summary
         if: always()
         uses: dawidd6/action-send-mail@v3
         with:
@@ -67,25 +66,22 @@ jobs:
           server_port: 465
           username: ${{ secrets.SMTP_USERNAME }}
           password: ${{ secrets.SMTP_PASSWORD }}
-          subject: "⚠️ META-F⁴ / D₄ – Informe automàtic del cicle ${{ github.run_number }}"
+          subject: "META-F4 / D4 – Informe automàtic #${{ github.run_number }}"
           to: ${{ secrets.ALERT_EMAIL }}
           from: META-F4_D4@system.local
           html_body: |
             <html>
               <body style="font-family: monospace; background-color:#0d1117; color:white; padding:20px;">
-                <h2 style="color:#60a5fa;">🧠 META-F⁴ / D₄ – Informe automàtic</h2>
-                <p><b>Execució #${{ github.run_number }}</b> — <b>Data:</b> $(date)</p>
+                <h2 style="color:#60a5fa;">META-F4 / D4 – Informe automàtic</h2>
+                <p><b>Execució #${{ github.run_number }}</b></p>
 
-                <h3 style="color:#34d399;">Resum (últimes línies del log):</h3>
+                <h3 style="color:#34d399;">Resum:</h3>
                 <pre style="background:#1e293b; padding:10px; border-radius:6px; white-space:pre-wrap;">
 ${{ steps.summary.outputs.summary }}
                 </pre>
 
                 <hr style="border:1px solid #475569;">
-                <p>Si hi ha hagut una fallada, el sistema ha activat el mode d’autorecuperació.</p>
-                <p>Tots els detalls estan al fitxer adjunt <b>cycle_log.txt</b>.</p>
-
-                <p style="color:#94a3b8;">— Sistema Autònom META-F⁴ / D₄</p>
+                <p>Detalls complets al fitxer adjunt <b>cycle_log.txt</b>.</p>
               </body>
             </html>
           attachments: cycle_log.txt
