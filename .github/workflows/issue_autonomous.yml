@@ -1,0 +1,70 @@
+name: META-F4_D4 Autonomous Loop
+
+on:
+  issues:
+    types: [opened, edited, reopened, labeled]
+  workflow_dispatch:  # permet executar-lo manualment si cal
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  autonomous_cycle:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🔹 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🔹 Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 🔹 Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: 🔹 Run main system
+        run: |
+          echo "🧠 Starting META-F4/D4 autonomous cycle..."
+          bash run.sh || python main.py
+
+      - name: 🔹 Analyze results
+        run: |
+          echo "📊 Analyzing outputs and preparing AI feedback..."
+          python - <<'EOF'
+          import os, json, re
+          log = "meta_autolog.txt"
+          if os.path.exists(log):
+              with open(log) as f:
+                  data = f.read()[-2000:]
+                  print("Last log fragment:", data)
+          else:
+              print("No log found; first run or manual start.")
+          EOF
+
+      - name: 🔹 AI-assisted improvement suggestion
+        uses: github/copilot-action@v1
+        with:
+          prompt: |
+            Review the latest logs and suggest an improvement to the META-F4/D4 code.
+            Focus on optimization, symbolic interpretation accuracy, or stability.
+
+      - name: 🔹 Commit changes (if any)
+        run: |
+          git config --global user.name "META-F4_D4_Agent"
+          git config --global user.email "meta@autonomous.local"
+          git add .
+          git diff --cached --quiet || (git commit -m "🤖 Autonomous update by META-F4_D4 Agent" && git push)
+
+      - name: 🔹 Close issue with confirmation
+        if: github.event_name == 'issues'
+        run: |
+          echo "✅ Issue processed successfully."
