@@ -39,9 +39,7 @@ jobs:
           path: cycle_log.txt
 
       - name: Generate summary
-        id: summary
         run: |
-          tail -n 20 cycle_log.txt > last_lines.txt
-          echo "summary<<EOF" >> $GITHUB_OUTPUT
-          cat last_lines.txt >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          echo "### Últimes línies del cicle D4" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          tail -n 20 cycle_log.txt >> $GITHUB_STEP_SUMMARY
