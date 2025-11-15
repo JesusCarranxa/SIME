@@ -30,7 +30,7 @@ jobs:
         run: |
           echo "Iniciant cicle META-F4 / D4..."
           chmod +x run.sh
-          ./run.sh > cycle_log.txt 2>&1
+          bash -x run.sh
 
       - name: Upload log
         uses: actions/upload-artifact@v4
