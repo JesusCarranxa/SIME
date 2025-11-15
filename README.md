@@ -1,4 +1,4 @@
-# 🧠 SIME – Symbolic Interpretation of Meaning and Emotion
+#  SIME – Symbolic Interpretation of Meaning and Emotion
 
 **Experimental symbolic-emotional system.**  
 Tested, documented, and mathematically validated.
