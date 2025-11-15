@@ -1,4 +1,6 @@
 #!/bin/bash
-echo "Executant META-F4_D4 automàticament..."
-pip install --no-cache-dir -r requirements.txt
-python main.py
+
+echo "Executant META-F4_D4..."
+
+# No instal·lis dependències aquí. Ja ho fa el workflow.
+python3 main.py
