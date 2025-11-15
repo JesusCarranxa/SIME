@@ -1,11 +1,12 @@
 name: META-F4_D4 Autonomous Cycle (Stable)
 
 on:
+  workflow_dispatch:        # Permet executar el workflow manualment
   push:
     branches:
       - main
   schedule:
-    - cron: "0 7 * * *"   # Cada dia 07:00 UTC
+    - cron: "0 7 * * *"     # Execució programada cada dia a les 07:00 UTC
 
 jobs:
   run_autonomous_cycle:
